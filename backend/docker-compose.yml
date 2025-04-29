@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  games-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gamesdb
+    volumes:
+      - games-db-data:/var/lib/postgresql/data
+      - ./gamesdb.sql:/docker-entrypoint-initdb.d/gamesdb.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 10
+
+  games-web:
+    build: .
+    working_dir: /app
+    depends_on:
+      games-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@games-db:5432/gamesdb
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+
+  games-scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile-selenium.dockerfile
+    depends_on:
+      games-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@games-db:5432/gamesdb
+    volumes:
+      - .:/app
+    # No ports needed
+
+
+volumes:
+  games-db-data:
+    driver: local

@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+asyncpg
+pandas
+openai
+python-dotenv
+selenium
+webdriver-manager
+beautifulsoup4
+boto3
+pydantic-settings
+pydantic[email]
+python-jose
+passlib
+python-multipart
